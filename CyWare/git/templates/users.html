@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Git Users</title>
+</head>
+<body>
+    <form method="get" action="/user/">
+        <input type="text" id="searchBox" name="q" placeholder="Search">
+        <input type="submit" value="Search" >
+    </form>
+
+    <table>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Page</th>
+          <th>Score</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.login }}</td>
+          <td>{{ user.url }}</td>
+          <td>{{ user.score }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>
