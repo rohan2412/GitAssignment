@@ -122,7 +122,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR + '/CyWare/git/git_user.log',
+            'filename': BASE_DIR + '/CyWare/git/logs/user.log',
             'formatter': 'verbose'
         },
     },
