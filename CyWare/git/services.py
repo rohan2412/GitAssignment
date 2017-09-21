@@ -3,6 +3,12 @@ from CyWare.utils import process_GET_request, get_search_url
 import json
 from models import GitUser
 from datetime import datetime
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+import logging
+
+
+logger = logging.getLogger('Logging')
 
 
 class GitService(object):
@@ -34,6 +40,7 @@ class GitService(object):
         else:
             response = GitService.get_all_users()
             users = json.loads(response.text)
+
         GitService.store_fetched_users(users)
         return users
 
@@ -42,20 +49,30 @@ class GitService(object):
         bulk_create_list = []
         for user in users:
             try:
-                obj = GitUser.objects.get(git_id=user['id'])
-                for key, val in user.items():
-                    if key in ['id']:
-                        continue
-                    setattr(obj, key, val)
-                setattr(obj, 'updated_dt', datetime.now())
-                obj.save()
-            except GitUser.DoesNotExist:
                 try:
-                    user['git_id'] = user['id']
-                    del user['id']
+                    obj = GitUser.objects.get(git_id=user['id'])
+                    git_id = user.pop('id')
+                    for key, val in user.items():
+                        setattr(obj, key, val)
+                    user['id'] = git_id
+                    setattr(obj, 'updated_dt', datetime.now())
+                    try:
+                        obj.save()
+                    except IntegrityError as e:
+                        logger.error('Failed to load into database|User|%s|Error|%s'
+                                     % (user['login'], e))
+                except GitUser.DoesNotExist:
+                    # logger.info('New User|%s' % user['login'])
+
+                    user['git_id'] = user.pop('id')
                     obj = GitUser(**user)
-                    obj.full_clean()    # obj.save()
-                    bulk_create_list.append(obj)
-                except Exception as e:
-                    print e
+                    user['id'] = user.pop('git_id')
+                    try:
+                        obj.full_clean()
+                        bulk_create_list.append(obj)
+                    except ValidationError as e:
+                        logger.error('Failed to load into database|User|%s|Error|%s'
+                                     % (user['login'], e))
+            except KeyError as e:
+                logger.critical('Missing Fields|User|%s' % e)
         GitUser.objects.bulk_create(bulk_create_list)

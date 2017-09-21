@@ -106,3 +106,31 @@ STATIC_URL = '/static/'
 GIT_USERS_GET_URL = 'https://api.github.com/users'
 GIT_USERS_SEARCH_URL = 'https://api.github.com/search/users'
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': "%(levelname)s|%(asctime)s|%(module)s|%(process)d|%(thread)d|%(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + '/CyWare/git/git_user.log',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'Logging': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        }
+    }
+}
